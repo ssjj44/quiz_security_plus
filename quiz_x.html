@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz Page</title>
+  <style>
+    /* Base styling */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background-color: #f5f5f5;
+      margin: 0;
+      animation: fadeIn 0.8s ease-out;
+    }
+    .quiz-settings {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    .quiz-settings label {
+      margin-right: 10px;
+      font-size: 1.1em;
+    }
+    .quiz-settings select {
+      padding: 5px;
+      font-size: 1em;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      margin-right: 10px;
+      transition: border-color 0.3s;
+    }
+    .quiz-settings select:focus {
+      border-color: #007BFF;
+      outline: none;
+    }
+    .quiz-settings button {
+      background: #007BFF;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      cursor: pointer;
+      border-radius: 5px;
+      transition: background 0.3s, transform 0.2s;
+    }
+    .quiz-settings button:hover {
+      background: #0056b3;
+      transform: scale(1.02);
+    }
+    .quiz-container {
+      display: none;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      width: 700px;
+      max-width: 90%;
+      text-align: center;
+      animation: fadeIn 0.5s ease-out;
+    }
+    .progress-bar {
+      width: 100%;
+      height: 10px;
+      background: #e0e0e0;
+      border-radius: 5px;
+      margin-bottom: 20px;
+    }
+    .progress {
+      height: 100%;
+      background: #007BFF;
+      width: 0%;
+      border-radius: 5px;
+      transition: width 0.3s;
+    }
+    #question-number {
+      font-size: 1.1em;
+      color: #555;
+      margin-bottom: 10px;
+    }
+    #question-text {
+      font-size: 1.2em;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+    .options label {
+      display: block;
+      margin: 10px 0;
+      cursor: pointer;
+    }
+    .options input[type="radio"] {
+      display: none;
+    }
+    .options label span {
+      display: block;
+      padding: 10px;
+      background: #f0f0f0;
+      border-radius: 5px;
+      transition: transform 0.3s, background 0.3s, color 0.3s;
+    }
+    .options label span:hover {
+      transform: scale(1.05);
+      background: #e8f0fe;
+    }
+    .options input[type="radio"]:checked + span {
+      background: #007BFF;
+      color: white;
+    }
+    .buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
+    .check-answer, .next-question {
+      background: #007BFF;
+      color: white;
+      border: none;
+      padding: 10px;
+      cursor: pointer;
+      width: 48%;
+      border-radius: 5px;
+      transition: background 0.3s, transform 0.2s;
+    }
+    .check-answer:hover, .next-question:hover {
+      background: #0056b3;
+      transform: scale(1.02);
+    }
+    #toggleExplanation {
+      background: #28a745;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      cursor: pointer;
+      border-radius: 5px;
+      margin-top: 10px;
+      transition: background 0.3s, transform 0.2s;
+    }
+    #toggleExplanation:hover {
+      background: #218838;
+      transform: scale(1.02);
+    }
+    #explanationBox {
+      margin-top: 10px;
+      padding: 15px;
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      text-align: left;
+    }
+    .report p {
+      font-size: 1.1em;
+      margin: 10px 0;
+    }
+    .feedback {
+      font-weight: bold;
+      color: #28a745;
+    }
+    .restart-button {
+      background: #007BFF;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      cursor: pointer;
+      border-radius: 5px;
+      margin-top: 20px;
+      transition: background 0.3s, transform 0.2s;
+    }
+    .restart-button:hover {
+      background: #0056b3;
+      transform: scale(1.02);
+    }
+    /* Animation Keyframes */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="quiz-settings">
+    <label for="question-count">Select number of questions:</label>
+    <select id="question-count">
+      <option value="10">10 Questions</option>
+      <option value="20">20 Questions</option>
+      <option value="30">30 Questions</option>
+      <option value="40">40 Questions</option>
+      <option value="50">50 Questions</option>
+    </select>
+    <button onclick="startQuiz()">Start Quiz</button>
+  </div>
+  
+  <div class="quiz-container">
+    <div class="progress-bar">
+      <div class="progress"></div>
+    </div>
+    <h3 id="question-number">Loading...</h3>
+    <p id="question-text">Please wait...</p>
+    <div class="options" id="options-container"></div>
+    <p id="result"></p>
+    <div class="buttons">
+      <button class="check-answer" onclick="checkAnswer()">Check Answer</button>
+      <button class="next-question" onclick="nextQuestion()" disabled>Next</button>
+    </div>
+  </div>
+
+  <script>
+    let questions = [];
+    let currentQuestionIndex = 0;
+    let correctAnswers = 0;
+    let wrongAnswers = 0;
+    let totalQuestions = 0;
+    
+    // Stochează structura HTML inițială a containerului de quiz
+    const quizContainer = document.querySelector(".quiz-container");
+    const originalQuizHTML = quizContainer.innerHTML;
+
+    async function loadQuestions() {
+      try {
+        const response = await fetch("questions.json");
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+        questions = await response.json();
+        if (questions.length > 0) {
+          totalQuestions = parseInt(document.getElementById("question-count").value);
+          selectRandomQuestions(totalQuestions);
+          loadQuestion();
+        } else {
+          throw new Error("No questions found in JSON.");
+        }
+      } catch (error) {
+        console.error("Error loading questions:", error);
+        document.querySelector(".quiz-container").innerHTML = "<h3>Failed to load questions.</h3>";
+      }
+    }
+
+    function selectRandomQuestions(numQuestions) {
+      const shuffledQuestions = questions.sort(() => 0.5 - Math.random());
+      questions = shuffledQuestions.slice(0, numQuestions);
+    }
+
+    function startQuiz() {
+      const selectedQuestions = document.getElementById("question-count").value;
+      if (selectedQuestions) {
+        currentQuestionIndex = 0;
+        correctAnswers = 0;
+        wrongAnswers = 0;
+        totalQuestions = parseInt(selectedQuestions);
+        document.querySelector(".quiz-settings").style.display = "none";
+        document.querySelector(".quiz-container").style.display = "block";
+        // Pornește încărcarea întrebărilor
+        loadQuestions();
+      } else {
+        alert("Please select a number of questions.");
+      }
+    }
+
+    function loadQuestion() {
+      if (questions.length === 0) return;
+      const questionData = questions[currentQuestionIndex];
+      document.getElementById("question-number").textContent = `Question ${currentQuestionIndex + 1}`;
+      document.getElementById("question-text").textContent = questionData.question;
+      const optionsContainer = document.getElementById("options-container");
+      optionsContainer.innerHTML = "";
+      const shuffledOptions = shuffleArray(questionData.options);
+
+      shuffledOptions.forEach(option => {
+        const label = document.createElement("label");
+        label.innerHTML = `<input type="radio" name="answer" value="${option}"><span>${option}</span>`;
+        optionsContainer.appendChild(label);
+      });
+
+      document.getElementById("result").textContent = "";
+      document.querySelector(".next-question").disabled = true;
+      document.querySelector(".check-answer").disabled = false;
+
+      const progress = document.querySelector(".progress");
+      progress.style.width = `${((currentQuestionIndex + 1) / questions.length) * 100}%`;
+    }
+
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function checkAnswer() {
+      const correctAnswer = questions[currentQuestionIndex].answer;
+      const selectedOption = document.querySelector('input[name="answer"]:checked');
+      const resultContainer = document.getElementById("result");
+
+      let resultMessage = "";
+      let resultColor = "";
+
+      if (selectedOption) {
+        if (selectedOption.value === correctAnswer) {
+          resultMessage = "Correct! 🎉";
+          resultColor = "green";
+          correctAnswers++;
+        } else {
+          resultMessage = `Incorrect! ❌ Răspunsul corect este: ${correctAnswer}`;
+          resultColor = "red";
+          wrongAnswers++;
+        }
+      } else {
+        resultMessage = `Niciun răspuns selectat. Răspunsul corect este: ${correctAnswer}`;
+        resultColor = "blue";
+      }
+
+      resultContainer.innerHTML = `
+        <p style="color: ${resultColor}; font-weight: bold;">${resultMessage}</p>
+        <button id="toggleExplanation" onclick="toggleExplanation()">Dezvăluie explicația</button>
+        <div id="explanationBox" style="display: none;"></div>
+      `;
+      loadExplanation(questions[currentQuestionIndex].explanation);
+      document.querySelector(".next-question").disabled = false;
+      document.querySelector(".check-answer").disabled = true;
+    }
+
+    function loadExplanation(explanation) {
+      const lines = explanation.split('\n');
+      const formattedLines = lines.map(line => {
+        const urlPattern = /(https?:\/\/[^\s]+)/g;
+        const clickableLine = line.replace(urlPattern, '<a href="$1" target="_blank">$1</a>');
+        return `<p>${clickableLine}</p>`;
+      });
+      document.getElementById('explanationBox').innerHTML = formattedLines.join('');
+    }
+
+    function toggleExplanation() {
+      const explanationBox = document.getElementById('explanationBox');
+      const button = document.getElementById('toggleExplanation');
+      if (explanationBox.style.display === "none") {
+        explanationBox.style.display = "block";
+        button.textContent = "Ascunde explicația";
+      } else {
+        explanationBox.style.display = "none";
+        button.textContent = "Dezvăluie explicația";
+      }
+    }
+
+    function nextQuestion() {
+      currentQuestionIndex++;
+      if (currentQuestionIndex < questions.length) {
+        loadQuestion();
+      } else {
+        showReport();
+      }
+    }
+
+    function showReport() {
+      const quizContainer = document.querySelector(".quiz-container");
+      let scorePercentage = (correctAnswers / totalQuestions) * 100;
+      let feedbackMessage = "";
+      if (scorePercentage === 100) {
+        feedbackMessage = "Excelent! Ai răspuns corect la toate întrebările! 🎉";
+      } else if (scorePercentage >= 75) {
+        feedbackMessage = "Foarte bine! Ai avut o performanță excelentă! 👍";
+      } else if (scorePercentage >= 50) {
+        feedbackMessage = "Nu e rău, dar mai e loc de îmbunătățiri! 😊";
+      } else {
+        feedbackMessage = "Mai exersează! Data viitoare va fi mai bine. 💪";
+      }
+      quizContainer.innerHTML = `
+        <h3>Quiz completat!</h3>
+        <div class="report">
+          <p>Total întrebări: ${totalQuestions}</p>
+          <p>Răspunsuri corecte: ${correctAnswers}</p>
+          <p>Răspunsuri greșite: ${wrongAnswers}</p>
+          <p>Scor: ${scorePercentage.toFixed(2)}%</p>
+          <p class="feedback">${feedbackMessage}</p>
+        </div>
+        <button class="restart-button" onclick="restartQuiz()">Reîncepe Quiz</button>
+      `;
+    }
+
+    function restartQuiz() {
+      // Restabilește structura HTML inițială a containerului de quiz
+      document.querySelector(".quiz-container").innerHTML = originalQuizHTML;
+      currentQuestionIndex = 0;
+      correctAnswers = 0;
+      wrongAnswers = 0;
+      totalQuestions = parseInt(document.getElementById("question-count").value);
+      // Ascunde containerul de quiz și pornește un nou test
+      document.querySelector(".quiz-settings").style.display = "none";
+      document.querySelector(".quiz-container").style.display = "block";
+      loadQuestions();
+    }
+  </script>
+</body>
+</html>

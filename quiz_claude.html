@@ -1,0 +1,1954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enhanced Quiz Platform</title>
+  <style>
+    /* Base styling */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background-color: #f5f5f5;
+      margin: 0;
+      animation: fadeIn 0.8s ease-out;
+      transition: background 0.3s, color 0.3s;
+    }
+    .dark-mode {
+      background-color: #1e1e1e;
+      color: white;
+    }
+    .home-container, .quiz-container, .stats-container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      width: 800px;
+      max-width: 90%;
+      text-align: center;
+      animation: fadeIn 0.5s ease-out;
+      transition: background 0.3s, color 0.3s;
+      margin-top: 20px;
+    }
+    .dark-mode .home-container, .dark-mode .quiz-container, .dark-mode .stats-container {
+      background: #333;
+      color: white;
+    }
+    .quiz-modes {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+    .quiz-mode-card {
+      background: #f0f0f0;
+      padding: 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: transform 0.3s, box-shadow 0.3s;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .dark-mode .quiz-mode-card {
+      background: #444;
+    }
+    .quiz-mode-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    .quiz-mode-card h3 {
+      margin-top: 0;
+      color: #007BFF;
+    }
+    .dark-mode .quiz-mode-card h3 {
+      color: #0d6efd;
+    }
+    .quiz-mode-card p {
+      font-size: 0.9em;
+      color: #555;
+    }
+    .dark-mode .quiz-mode-card p {
+      color: #ccc;
+    }
+    .progress-bar {
+      width: 100%;
+      height: 10px;
+      background: #e0e0e0;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+    .dark-mode .progress-bar {
+      background: #444;
+    }
+    .progress {
+      height: 100%;
+      background: #007BFF;
+      width: 0%;
+      border-radius: 5px;
+      transition: width 0.3s;
+    }
+    .progress-info {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 5px;
+      font-size: 0.9em;
+      color: #555;
+    }
+    .dark-mode .progress-info {
+      color: #ccc;
+    }
+    .time-indicator {
+      color: #ff7700;
+      font-weight: bold;
+    }
+    .dark-mode .time-indicator {
+      color: #ff9c4c;
+    }
+    .options {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 10px;
+      margin: 20px 0;
+    }
+    .options label {
+      cursor: pointer;
+    }
+    .options input[type="radio"] {
+      display: none;
+    }
+    .options label span {
+      display: block;
+      padding: 15px;
+      background: #f0f0f0;
+      border-radius: 5px;
+      transition: transform 0.2s, background 0.2s, color 0.2s;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .dark-mode .options label span {
+      background: #444;
+    }
+    .options label span:hover {
+      transform: scale(1.02);
+      background: #e8f0fe;
+      color: #000;
+    }
+    .dark-mode .options label span:hover {
+      background: #0056b3;
+      color: white;
+    }
+    .options input[type="radio"]:checked + span {
+      background: #007BFF;
+      color: white;
+    }
+    .buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
+    .button {
+      background: #007BFF;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      cursor: pointer;
+      border-radius: 5px;
+      transition: background 0.3s, transform 0.2s;
+      font-size: 1em;
+    }
+    .button:hover {
+      background: #0056b3;
+      transform: scale(1.02);
+    }
+    .button:disabled {
+      background: #cccccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .dark-mode .button:disabled {
+      background: #555;
+    }
+    .button-green {
+      background: #28a745;
+    }
+    .button-green:hover {
+      background: #218838;
+    }
+    .button-danger {
+      background: #dc3545;
+    }
+    .button-danger:hover {
+      background: #c82333;
+    }
+    #toggleExplanation {
+      background: linear-gradient(145deg, #34d058, #28a745);
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      font-size: 1em;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 8px;
+      margin-top: 10px;
+      transition: background 0.3s, transform 0.2s, box-shadow 0.3s;
+    }
+    #toggleExplanation:hover {
+      background: linear-gradient(145deg, #28a745, #218838);
+      transform: scale(1.05);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    #explanationBox {
+      margin-top: 10px;
+      padding: 15px;
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      text-align: left;
+      color: #333;
+    }
+    .dark-mode #explanationBox {
+      background-color: #444;
+      border-color: #555;
+      color: white;
+    }
+    .report {
+      text-align: left;
+      margin: 20px 0;
+    }
+    .feedback {
+      font-weight: bold;
+      color: #28a745;
+      margin: 15px 0;
+      font-size: 1.2em;
+    }
+    .dark-mode .feedback {
+      color: #5ed778;
+    }
+    .categories-filter, .difficulty-filter {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 15px 0;
+      justify-content: center;
+    }
+    .filter-option {
+      padding: 8px 15px;
+      background: #f0f0f0;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      font-size: 0.9em;
+    }
+    .dark-mode .filter-option {
+      background: #444;
+    }
+    .filter-option.active {
+      background: #007BFF;
+      color: white;
+    }
+    .quiz-settings {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      justify-content: center;
+      margin: 20px 0;
+    }
+    .quiz-settings select {
+      padding: 8px 12px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      background-color: white;
+      font-size: 1em;
+    }
+    .dark-mode .quiz-settings select {
+      background-color: #555;
+      border-color: #666;
+      color: white;
+    }
+    .question-favorites {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+    }
+    .favorite-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5em;
+      color: #aaa;
+      transition: color 0.3s;
+    }
+    .favorite-btn.active {
+      color: #ffc107;
+    }
+    .category-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      background: #e9ecef;
+      border-radius: 12px;
+      font-size: 0.8em;
+      margin-right: 5px;
+      color: #495057;
+    }
+    .dark-mode .category-badge {
+      background: #444;
+      color: #ddd;
+    }
+    .difficulty-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 0.8em;
+      margin-right: 5px;
+      color: white;
+    }
+    .difficulty-easy {
+      background: #28a745;
+    }
+    .difficulty-medium {
+      background: #fd7e14;
+    }
+    .difficulty-hard {
+      background: #dc3545;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin: 20px 0;
+    }
+    .stat-card {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .dark-mode .stat-card {
+      background: #444;
+    }
+    .stat-value {
+      font-size: 2em;
+      font-weight: bold;
+      color: #007BFF;
+      margin: 10px 0;
+    }
+    .dark-mode .stat-value {
+      color: #0d6efd;
+    }
+    .performance-chart-container {
+      height: 250px;
+      margin: 20px 0;
+    }
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 800px;
+      max-width: 90%;
+      margin-bottom: 20px;
+    }
+    .nav-buttons {
+      display: flex;
+      gap: 10px;
+    }
+    .tab-button {
+      background: none;
+      border: none;
+      padding: 8px 15px;
+      cursor: pointer;
+      border-radius: 5px;
+      transition: background 0.2s;
+      color: inherit;
+    }
+    .tab-button:hover {
+      background: rgba(0,0,0,0.1);
+    }
+    .dark-mode .tab-button:hover {
+      background: rgba(255,255,255,0.1);
+    }
+    .tab-button.active {
+      background: #007BFF;
+      color: white;
+    }
+    .leaderboard-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+    .leaderboard-table th, .leaderboard-table td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+    .dark-mode .leaderboard-table th, .dark-mode .leaderboard-table td {
+      border-bottom: 1px solid #444;
+    }
+    .leaderboard-table th {
+      background-color: #f8f9fa;
+      font-weight: bold;
+      color: #495057;
+    }
+    .dark-mode .leaderboard-table th {
+      background-color: #444;
+      color: #fff;
+    }
+    .leaderboard-table tr:hover {
+      background-color: #f1f1f1;
+    }
+    .dark-mode .leaderboard-table tr:hover {
+      background-color: #444;
+    }
+    .user-avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      margin-right: 10px;
+      vertical-align: middle;
+    }
+    .help-hint {
+      background: #f8f9fa;
+      border-left: 4px solid #007bff;
+      padding: 12px 15px;
+      margin: 15px 0;
+      border-radius: 0 5px 5px 0;
+      font-size: 0.9em;
+      color: #495057;
+      text-align: left;
+    }
+    .dark-mode .help-hint {
+      background: #444;
+      color: #ddd;
+    }
+    .hint-toggle {
+      color: #007bff;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      font-size: 0.9em;
+      text-decoration: underline;
+    }
+    .dark-mode .hint-toggle {
+      color: #0d6efd;
+    }
+    .hint-content {
+      margin-top: 8px;
+    }
+    .feedback-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+      animation: slideIn 0.3s ease-out;
+      max-width: 300px;
+      z-index: 1000;
+    }
+    .dark-mode .feedback-container {
+      background: #333;
+    }
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    #timer {
+      font-size: 1.2em;
+      color: #dc3545;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    .confetti {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 999;
+      pointer-events: none;
+    }
+    .explanation-link {
+      color: #007BFF;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    
+    .explanation-link:hover {
+      color: #0056b3;
+      text-decoration: underline;
+    }
+    
+    .dark-mode .explanation-link {
+      color: #0d6efd;
+    }
+    
+    .dark-mode .explanation-link:hover {
+      color: #408cfd;
+    }
+  </style>
+</head>
+<body class="dark-mode">
+  <div class="navbar">
+    <h1>Enhanced Quiz Platform</h1>
+    <div class="nav-buttons">
+      <button id="homeButton" class="tab-button active">Home</button>
+      <button id="statsButton" class="tab-button">Statistics</button>
+      <button id="toggleColorMode" class="button">Switch to Light Mode</button>
+    </div>
+  </div>
+
+  <!-- Home Screen -->
+  <div id="homeContainer" class="home-container">
+    <h2>Choose a Quiz Mode</h2>
+    <p>Select a quiz mode to test your knowledge in different ways</p>
+    
+    <div class="categories-filter">
+      <span class="filter-option active" data-category="all">All Categories</span>
+      <span class="filter-option" data-category="A">Section A</span>
+      <span class="filter-option" data-category="B">Section B</span>
+      <span class="filter-option" data-category="C">Section C</span>
+    </div>
+    
+    <div class="difficulty-filter">
+      <span class="filter-option active" data-difficulty="all">All Difficulties</span>
+      <span class="filter-option" data-difficulty="easy">Easy</span>
+      <span class="filter-option" data-difficulty="medium">Medium</span>
+      <span class="filter-option" data-difficulty="hard">Hard</span>
+    </div>
+    
+    <div class="quiz-modes">
+      <div class="quiz-mode-card" data-mode="classic">
+        <h3>Classic Quiz</h3>
+        <p>Test your knowledge with multiple-choice questions at your own pace.</p>
+        <div class="category-badge">All Sections</div>
+      </div>
+      
+      <div class="quiz-mode-card" data-mode="timed">
+        <h3>Timed Challenge</h3>
+        <p>Race against the clock! Answer as many questions as possible within the time limit.</p>
+        <div class="difficulty-badge difficulty-medium">Medium</div>
+      </div>
+      
+      <div class="quiz-mode-card" data-mode="practice">
+        <h3>Practice Mode</h3>
+        <p>Focused practice with immediate feedback and explanations for each question.</p>
+        <div class="category-badge">All Sections</div>
+      </div>
+      
+      <div class="quiz-mode-card" data-mode="exam">
+        <h3>Exam Simulation</h3>
+        <p>Simulate a real exam environment with timed sections and review capability.</p>
+        <div class="difficulty-badge difficulty-hard">Hard</div>
+      </div>
+      
+      <div class="quiz-mode-card" data-mode="flashcards">
+        <h3>Flashcards</h3>
+        <p>Quick review of concepts with flashcard-style questions and answers.</p>
+        <div class="category-badge">All Sections</div>
+      </div>
+      
+      <div class="quiz-mode-card" data-mode="weakest">
+        <h3>Weakest Topics</h3>
+        <p>Focus on questions from categories you've struggled with in the past.</p>
+        <div class="difficulty-badge difficulty-medium">Medium</div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Quiz Container -->
+  <div id="quizContainer" class="quiz-container" style="display: none;">
+    <div id="quizHeader">
+      <div class="progress-info">
+        <span id="questionNumber">Question 1/10</span>
+        <span id="timeInfo" class="time-indicator"></span>
+      </div>
+      <div class="progress-bar">
+        <div id="progressBar" class="progress"></div>
+      </div>
+    </div>
+    
+    <div id="questionContainer">
+      <div class="question-favorites">
+        <button id="favoriteBtn" class="favorite-btn">★</button>
+      </div>
+      <div id="categoryTags">
+        <span class="category-badge">Section A</span>
+        <span class="difficulty-badge difficulty-medium">Medium</span>
+      </div>
+      <h2 id="questionText">Loading question...</h2>
+      
+      <div id="timerContainer" style="display: none;">
+        <div id="timer">30</div>
+      </div>
+      
+      <div id="optionsContainer" class="options">
+        <!-- Options will be inserted here -->
+      </div>
+      
+      <div id="resultContainer"></div>
+      
+      <div class="help-hint" id="hintContainer" style="display: none;">
+        <button id="hintToggle" class="hint-toggle">Show Hint</button>
+        <div id="hintContent" class="hint-content" style="display: none;">
+          This hint will help you answer the question correctly.
+        </div>
+      </div>
+      
+      <div class="buttons">
+        <button id="checkAnswerBtn" class="button">Check Answer</button>
+        <button id="nextQuestionBtn" class="button" disabled>Next Question</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Statistics Container -->
+  <div id="statsContainer" class="stats-container" style="display: none;">
+    <h2>Your Performance Statistics</h2>
+    
+    <div class="stats-grid">
+      <div class="stat-card">
+        <h3>Total Questions</h3>
+        <div id="totalQuestionsValue" class="stat-value">0</div>
+      </div>
+      
+      <div class="stat-card">
+        <h3>Correct Answers</h3>
+        <div id="correctAnswersValue" class="stat-value">0</div>
+      </div>
+      
+      <div class="stat-card">
+        <h3>Accuracy</h3>
+        <div id="accuracyValue" class="stat-value">0%</div>
+      </div>
+      
+      <div class="stat-card">
+        <h3>Average Time</h3>
+        <div id="averageTimeValue" class="stat-value">0s</div>
+      </div>
+    </div>
+    
+    <h3>Performance by Category</h3>
+    <div id="categoryPerformanceChart" class="performance-chart-container">
+      <!-- Chart will be rendered here -->
+      <p>Chart placeholder - would show accuracy by category</p>
+    </div>
+    
+    <h3>Recent Quizzes</h3>
+    <table class="leaderboard-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Mode</th>
+          <th>Questions</th>
+          <th>Score</th>
+          <th>Time</th>
+        </tr>
+      </thead>
+      <tbody id="recentQuizzesTable">
+        <tr>
+          <td>Feb 25, 2025</td>
+          <td>Classic</td>
+          <td>10</td>
+          <td>80%</td>
+          <td>5m 20s</td>
+        </tr>
+        <tr>
+          <td>Feb 24, 2025</td>
+          <td>Timed</td>
+          <td>15</td>
+          <td>73%</td>
+          <td>2m 45s</td>
+        </tr>
+      </tbody>
+    </table>
+    
+    <h3>Favorite Questions</h3>
+    <div id="favoriteQuestions">
+      <p>You haven't saved any favorite questions yet.</p>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Your JavaScript code here
+    });
+  </script>
+  <script>
+    // DOM Elements
+    const homeContainer = document.getElementById('homeContainer');
+    const quizContainer = document.getElementById('quizContainer');
+    const statsContainer = document.getElementById('statsContainer');
+    const homeButton = document.getElementById('homeButton');
+    const statsButton = document.getElementById('statsButton');
+    const toggleColorModeBtn = document.getElementById('toggleColorMode');
+    
+    // Tab Navigation
+    homeButton.addEventListener('click', () => {
+      homeContainer.style.display = 'block';
+      quizContainer.style.display = 'none';
+      statsContainer.style.display = 'none';
+      homeButton.classList.add('active');
+      statsButton.classList.remove('active');
+    });
+    
+    statsButton.addEventListener('click', () => {
+      homeContainer.style.display = 'none';
+      quizContainer.style.display = 'none';
+      statsContainer.style.display = 'block';
+      homeButton.classList.remove('active');
+      statsButton.classList.add('active');
+    });
+    
+    // Toggle Color Mode
+    toggleColorModeBtn.addEventListener('click', () => {
+      const body = document.body;
+      if (body.classList.contains('dark-mode')) {
+        body.classList.remove('dark-mode');
+        toggleColorModeBtn.textContent = 'Switch to Dark Mode';
+      } else {
+        body.classList.add('dark-mode');
+        toggleColorModeBtn.textContent = 'Switch to Light Mode';
+      }
+    });
+    
+    // Quiz Mode Selection
+    const quizModeCards = document.querySelectorAll('.quiz-mode-card');
+    quizModeCards.forEach(card => {
+      card.addEventListener('click', () => {
+        const mode = card.dataset.mode;
+        startQuiz(mode);
+      });
+    });
+    
+    // Category & Difficulty Filters
+    const categoryFilters = document.querySelectorAll('.categories-filter .filter-option');
+    const difficultyFilters = document.querySelectorAll('.difficulty-filter .filter-option');
+    
+    categoryFilters.forEach(filter => {
+      filter.addEventListener('click', () => {
+        categoryFilters.forEach(f => f.classList.remove('active'));
+        filter.classList.add('active');
+        applyFilters();
+      });
+    });
+    
+    difficultyFilters.forEach(filter => {
+      filter.addEventListener('click', () => {
+        difficultyFilters.forEach(f => f.classList.remove('active'));
+        filter.classList.add('active');
+        applyFilters();
+      });
+    });
+    
+    function applyFilters() {
+      const selectedCategory = document.querySelector('.categories-filter .active').dataset.category;
+      const selectedDifficulty = document.querySelector('.difficulty-filter .active').dataset.difficulty;
+      
+      // This would filter the quiz mode cards based on selected filters
+      console.log(`Filtering for category: ${selectedCategory}, difficulty: ${selectedDifficulty}`);
+      
+      // For now, just simulating filtering by showing all cards
+      quizModeCards.forEach(card => {
+        card.style.display = 'block';
+      });
+    }
+    
+    // Quiz State Variables
+    let currentQuestions = [];
+    let currentQuestionIndex = 0;
+    let currentMode = '';
+    let correctAnswers = 0;
+    let quizStartTime = 0;
+    let questionStartTime = 0;
+    let timerInterval = null;
+    let examTimerInterval = null;  // Add this
+    let examTimeRemaining = 0;     // Add this
+    let quizSettings = {
+      timedMode: false,
+      timePerQuestion: 30,
+      totalTime: 300,
+      showHints: false,
+      questionsCount: 10
+    };
+    
+    // Mock Questions Data (would be loaded from questions.json)
+    const mockQuestions = [
+      {
+        id: "A6",
+        question: "A6. A company has hired a third-party to gather information about the company's servers and data. This third-party will not have direct access to the company's internal network, but they can gather information from any other source. Which of the following would BEST describe this approach?",
+        options: [
+          "Vulnerability scanning",
+          "Passive reconnaissance",
+          "Supply chain analysis",
+          "Regulatory audit"
+        ],
+        answer: "Passive reconnaissance",
+        explanation: "B. Passive reconnaissance\nPassive reconnaissance focuses on gathering as much information from open sources such as social media, corporate websites, and business organizations.\nThe incorrect answers:\nA. Vulnerability scanning\nSome active reconnaissance tests will query systems directly to see if a vulnerability currently exists.\nC. Supply chain analysis\nA supply chain analysis will examine the security associated with a supplier, and the analysis will not provide any information regarding a company's own servers and data.\nD. Regulatory audit\nA regulatory audit is a detailed security analysis based on existing laws or private guidelines. A regulatory audit commonly requires access to internal systems and data.\nMore information:\nSY0-701, Objective 5.5 - Penetration Tests https://professormesser.link/701050502",
+        category: "A",
+        difficulty: "medium",
+        hint: "Think about what methods can be used to gather information without direct access to systems."
+      },
+      {
+        id: "A7",
+        question: "A7. A company's email server has received an email from a third-party, but the origination server does not match the list of authorized devices. Which of the following would determine the disposition of this message?",
+        options: [
+          "SPF",
+          "NAC",
+          "DMARC",
+          "DKIM"
+        ],
+        answer: "DMARC",
+        explanation: "C. DMARC\nDMARC (Domain-based Message Authentication Reporting and Conformance) specifies the disposition of spam emails. The legitimate owner of the originating email domain can choose to have these messages accepted, sent to a spam folder, or rejected.\nThe incorrect answers:\nA. SPF\nSPF (Sender Policy Framework) is a list of all authorized mail servers for a specific domain. All legitimate emails would be sent from one of the servers listed in the SPF configuration.\nB. NAC\nNAC (Network Access Control) is a way to limit network access to only authorized users. NAC is not commonly used to manage the transfer of email messages.\nD. DKIM\nDKIM (Domain Keys Identified Mail) provides a way to validate all digitally signed messages from a specific email server. DKIM does not determine how the receiving server categorizes these digitally signed messages.\nMore information:\nSY0-701, Objective 4.5 - Email Security https://professormesser.link/701040505",
+        category: "A",
+        difficulty: "hard",
+        hint: "This protocol helps decide what happens to emails that don't match authorized sources."
+      },
+      {
+        id: "A8",
+        question: "A8. Which of these threat actors would be MOST likely to attack systems for direct financial gain?",
+        options: [
+          "Organized crime",
+          "Hacktivist",
+          "Nation state",
+          "Shadow IT"
+        ],
+        answer: "Organized crime",
+        explanation: "A. Organized crime\nAn organized crime actor is motivated by money, and their hacking objectives are usually based around objectives that can be easily exchanged for financial capital.\nThe incorrect answers:\nB. Hacktivist\nA hacktivist is focused on a political agenda and not commonly on a financial gain.\nC. Nation state\nNation states are already well funded, and their primary objective is not usually based on revenue or income.\nD. Shadow IT\nShadow IT describes part of the organization that works around the existing IT department to build their own applications and infrastructure.\nMore information:\nSY0-701, Objective 2.1 - Threat Actors https://professormesser.link/701020101",
+        category: "A",
+        difficulty: "easy",
+        hint: "Consider which type of entity would be most motivated by direct monetary gain."
+      }
+    ];
+    
+    // Start Quiz Function
+// Add this function to reset the quiz container HTML structure
+function resetQuizContainer() {
+  quizContainer.innerHTML = `
+    <div id="quizHeader">
+      <div class="progress-info">
+        <span id="questionNumber">Question 1/10</span>
+        <span id="timeInfo" class="time-indicator"></span>
+      </div>
+      <div class="progress-bar">
+        <div id="progressBar" class="progress"></div>
+      </div>
+    </div>
+    
+    <div id="questionContainer">
+      <div class="question-favorites">
+        <button id="favoriteBtn" class="favorite-btn">★</button>
+      </div>
+      <div id="categoryTags">
+        <span class="category-badge">Section A</span>
+        <span class="difficulty-badge difficulty-medium">Medium</span>
+      </div>
+      <h2 id="questionText">Loading question...</h2>
+      
+      <div id="timerContainer" style="display: none;">
+        <div id="timer">30</div>
+      </div>
+      
+      <div id="optionsContainer" class="options">
+        <!-- Options will be inserted here -->
+      </div>
+      
+      <div id="resultContainer"></div>
+      
+      <div class="help-hint" id="hintContainer" style="display: none;">
+        <button id="hintToggle" class="hint-toggle">Show Hint</button>
+        <div id="hintContent" class="hint-content" style="display: none;">
+          This hint will help you answer the question correctly.
+        </div>
+      </div>
+      
+      <div class="buttons">
+        <button id="checkAnswerBtn" class="button">Check Answer</button>
+        <button id="nextQuestionBtn" class="button" disabled>Next Question</button>
+      </div>
+    </div>
+  `;
+
+  // Reattach event listeners
+  document.getElementById('checkAnswerBtn').addEventListener('click', checkAnswer);
+  document.getElementById('nextQuestionBtn').addEventListener('click', nextQuestion);
+  document.getElementById('favoriteBtn').addEventListener('click', toggleFavorite);
+  document.getElementById('hintToggle').addEventListener('click', toggleHint);
+}
+
+// Modify the startQuiz function to call resetQuizContainer first
+function startQuiz(mode) {
+  if (!allQuestions || allQuestions.length === 0) {
+    console.error('Questions not loaded yet');
+    // Show loading message to user
+    document.getElementById('questionText').textContent = 'Loading questions...';
+    // Wait for questions to load
+    fetchQuestions().then(() => {
+      startQuiz(mode); // Retry after questions are loaded
+    });
+    return;
+  }
+  
+  currentMode = mode;
+  
+  // Configure quiz settings based on selected mode
+  switch(mode) {
+    case 'classic':
+      quizSettings = {
+        timedMode: false,
+        showHints: false,
+        questionsCount: 10,
+        showExplanation: true,
+        randomOrder: false
+      };
+      break;
+    case 'timed':
+      quizSettings = {
+        timedMode: true,
+        timePerQuestion: 20,
+        totalTime: 0, // No overall time limit, just per question
+        showHints: false,
+        questionsCount: 15,
+        showExplanation: false,
+        randomOrder: true
+      };
+      break;
+    case 'practice':
+      quizSettings = {
+        timedMode: false,
+        showHints: true,
+        questionsCount: 5,
+        showExplanation: true,
+        randomOrder: false
+      };
+      break;
+    case 'exam':
+      quizSettings = {
+        timedMode: true,
+        timePerQuestion: 0, // No per-question limit
+        totalTime: 600, // 10 minutes for the entire exam
+        showHints: false,
+        questionsCount: 20,
+        showExplanation: false,
+        randomOrder: true,
+        reviewMode: true,
+        examMode: true // Add this flag
+      };
+      examTimeRemaining = quizSettings.totalTime; // Initialize total exam time
+      break;
+    case 'flashcards':
+      quizSettings = {
+        timedMode: false,
+        showHints: true,
+        questionsCount: 15,
+        showExplanation: true,
+        randomOrder: true,
+        flashcardMode: true
+      };
+      break;
+    case 'weakest':
+      quizSettings = {
+        timedMode: false,
+        showHints: true,
+        questionsCount: 10,
+        showExplanation: true,
+        randomOrder: false,
+        focusWeakTopics: true
+      };
+      break;
+  }
+  
+  // Reset the quiz container HTML structure first
+  resetQuizContainer();
+  
+  // Try to load questions with current filters
+  if (!loadQuestions(mode)) {
+    // If loading questions fails, return to home
+    return;
+  }
+  
+  // Initialize quiz
+  resetQuiz();
+  
+  // Switch to quiz view
+  homeContainer.style.display = 'none';
+  quizContainer.style.display = 'block';
+  statsContainer.style.display = 'none';
+  homeButton.classList.remove('active');
+  statsButton.classList.remove('active');
+}
+
+// Load questions based on mode and filters
+function loadQuestions(mode) {
+  // Get selected category and difficulty filters
+  const selectedCategory = document.querySelector('.categories-filter .active').dataset.category;
+  const selectedDifficulty = document.querySelector('.difficulty-filter .active').dataset.difficulty;
+
+  // Create a copy of all questions to work with
+  let filteredQuestions = [...allQuestions];
+
+  // Apply category filter if not 'all'
+  if (selectedCategory !== 'all') {
+    filteredQuestions = filteredQuestions.filter(q => q.category === selectedCategory);
+  }
+
+  // Apply difficulty filter if not 'all'
+  if (selectedDifficulty !== 'all') {
+    filteredQuestions = filteredQuestions.filter(q => q.difficulty === selectedDifficulty);
+  }
+
+  // Adjust number of questions based on difficulty
+  if (selectedDifficulty !== 'all') {
+    switch(selectedDifficulty) {
+      case 'easy':
+        quizSettings.questionsCount = Math.min(5, filteredQuestions.length);
+        break;
+      case 'medium':
+        quizSettings.questionsCount = Math.min(10, filteredQuestions.length);
+        break;
+      case 'hard':
+        quizSettings.questionsCount = Math.min(15, filteredQuestions.length);
+        break;
+    }
+  }
+
+  // If no questions match the filters, show an error message
+  if (filteredQuestions.length === 0) {
+    showFeedback(`No questions available for ${selectedCategory !== 'all' ? 'Section ' + selectedCategory + ' and ' : ''}${selectedDifficulty} difficulty. Please try different filters.`);
+    return false;
+  }
+
+  // Shuffle and select questions
+  filteredQuestions = shuffleArray([...filteredQuestions]);
+  currentQuestions = filteredQuestions.slice(0, quizSettings.questionsCount);
+
+  return true;
+}
+
+// Improved Fisher-Yates shuffle algorithm
+function shuffleArray(array) {
+  let currentIndex = array.length;
+  let randomIndex;
+
+  // While there remain elements to shuffle
+  while (currentIndex > 0) {
+    // Pick a remaining element
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+
+    // Swap it with the current element
+    [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+  }
+
+  return array;
+}
+
+// Reset quiz state
+function resetQuiz() {
+  currentQuestionIndex = 0;
+  correctAnswers = 0;
+  quizStartTime = Date.now();
+  displayQuestion();
+  
+  // Reset progress bar
+  const progressBar = document.getElementById('progressBar');
+  progressBar.style.width = '0%';
+  
+  // Reset timer if in a timed mode
+  if (quizSettings.timedMode) {
+    if (quizSettings.totalTime > 0) {
+      // Overall timer for exam mode
+      startTimer(quizSettings.totalTime, 'quiz');
+    } else if (quizSettings.timePerQuestion > 0) {
+      // Per-question timer
+      startTimer(quizSettings.timePerQuestion, 'question');
+    }
+  }
+}
+
+// Display current question
+function displayQuestion() {
+  if (currentQuestionIndex >= currentQuestions.length) {
+    finishQuiz();
+    return;
+  }
+
+  const question = currentQuestions[currentQuestionIndex];
+  questionStartTime = Date.now();
+
+  // ADD THIS DEBUGGING CODE:
+  const questionNumberElement = document.getElementById('questionNumber');
+  if (!questionNumberElement) {
+    console.error('Element with ID "questionNumber" not found!');
+    return; // Stop execution if the element is not found
+  }
+
+  // Update question number and progress
+  questionNumberElement.textContent = `Question ${currentQuestionIndex + 1}/${currentQuestions.length}`;
+  
+  // Display question text
+  document.getElementById('questionText').textContent = question.question;
+  
+  // Display category tags
+  const categoryTag = document.querySelector('#categoryTags .category-badge');
+  categoryTag.textContent = `Section ${question.category}`;
+  
+  const difficultyTag = document.querySelector('#categoryTags .difficulty-badge');
+  const difficulty = question.difficulty || 'medium'; // Provide default value if undefined
+  difficultyTag.className = `difficulty-badge difficulty-${difficulty}`;
+  difficultyTag.textContent = capitalizeFirstLetter(difficulty);
+  
+  // Display options
+  const optionsContainer = document.getElementById('optionsContainer');
+  optionsContainer.innerHTML = '';
+  
+  question.options.forEach((option, index) => {
+    const label = document.createElement('label');
+    const input = document.createElement('input');
+    input.type = 'radio';
+    input.name = 'option';
+    input.value = option;
+    input.id = `option${index}`;
+    
+    const span = document.createElement('span');
+    span.textContent = option;
+    
+    label.appendChild(input);
+    label.appendChild(span);
+    optionsContainer.appendChild(label);
+  });
+  
+  // Reset result container
+  document.getElementById('resultContainer').innerHTML = '';
+  
+  // Set up favorite button
+  const favoriteBtn = document.getElementById('favoriteBtn');
+  favoriteBtn.classList.remove('active');
+  if (isFavorite(question.id)) {
+    favoriteBtn.classList.add('active');
+  }
+  
+  // Show/hide hint based on settings
+  const hintContainer = document.getElementById('hintContainer');
+  if (quizSettings.showHints && question.hint) {
+    hintContainer.style.display = 'block';
+    document.getElementById('hintContent').style.display = 'none';
+    document.getElementById('hintToggle').textContent = 'Show Hint';
+  } else {
+    hintContainer.style.display = 'none';
+  }
+  
+  // Reset button states
+  document.getElementById('checkAnswerBtn').disabled = false;
+  document.getElementById('nextQuestionBtn').disabled = true;
+  
+  // Show/hide timer for timed questions
+  const timerContainer = document.getElementById('timerContainer');
+  if (quizSettings.timedMode && quizSettings.timePerQuestion > 0) {
+    timerContainer.style.display = 'block';
+    startTimer(quizSettings.timePerQuestion, 'question');
+  } else if (quizSettings.timedMode && quizSettings.examMode) {
+    // For exam mode, continue with remaining time
+    timerContainer.style.display = 'block';
+    startTimer(examTimeRemaining, 'quiz');
+  } else {
+    timerContainer.style.display = 'none';
+  }
+  
+  // Special handling for flashcard mode
+  if (quizSettings.flashcardMode) {
+    // In flashcard mode, hide options initially
+    optionsContainer.style.display = 'none';
+    document.getElementById('checkAnswerBtn').textContent = 'Show Answer';
+  } else {
+    optionsContainer.style.display = 'grid';
+    document.getElementById('checkAnswerBtn').textContent = 'Check Answer';
+  }
+}
+
+// Timer functions
+function startTimer(seconds, type) {
+  clearInterval(timerInterval);
+  clearInterval(examTimerInterval); // Clear exam timer if exists
+  
+  const timerDisplay = document.getElementById('timer');
+  const timeInfo = document.getElementById('timeInfo');
+  
+  if (type === 'quiz' && quizSettings.examMode) {
+    // Special handling for exam mode
+    examTimeRemaining = seconds;
+    examTimerInterval = setInterval(() => {
+      examTimeRemaining--;
+      
+      const minutes = Math.floor(examTimeRemaining / 60);
+      const remainingSeconds = examTimeRemaining % 60;
+      timeInfo.textContent = `Exam time: ${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+      
+      if (examTimeRemaining <= 30) {
+        timeInfo.style.color = '#dc3545';
+      }
+      
+      if (examTimeRemaining <= 0) {
+        clearInterval(examTimerInterval);
+        finishQuiz();
+      }
+
+      if (examTimeRemaining === 60) {
+        showFeedback('One minute remaining!');
+      } else if (examTimeRemaining === 30) {
+        showFeedback('30 seconds remaining!');
+      }
+    }, 1000);
+  } else if (type === 'question') {
+    timerDisplay.textContent = seconds;
+    timeInfo.textContent = `${seconds}s remaining`;
+    
+    timerInterval = setInterval(() => {
+      seconds--;
+      timerDisplay.textContent = seconds;
+      timeInfo.textContent = `${seconds}s remaining`;
+      
+      if (seconds <= 5) {
+        timerDisplay.style.color = '#dc3545';
+      } else {
+        timerDisplay.style.color = '';
+      }
+      
+      if (seconds <= 0) {
+        clearInterval(timerInterval);
+        handleTimeUp();
+      }
+    }, 1000);
+  } else if (type === 'quiz') {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    timeInfo.textContent = `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds} remaining`;
+    
+    timerInterval = setInterval(() => {
+      seconds--;
+      const minutes = Math.floor(seconds / 60);
+      const remainingSeconds = seconds % 60;
+      timeInfo.textContent = `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds} remaining`;
+      
+      if (seconds <= 30) {
+        timeInfo.style.color = '#dc3545';
+      }
+      
+      if (seconds <= 0) {
+        clearInterval(timerInterval);
+        finishQuiz();
+      }
+    }, 1000);
+  }
+}
+
+// Handle when time is up for a question
+function handleTimeUp() {
+  document.getElementById('checkAnswerBtn').disabled = true;
+  document.getElementById('nextQuestionBtn').disabled = false;
+  
+  const resultContainer = document.getElementById('resultContainer');
+  resultContainer.innerHTML = '<div class="feedback" style="color: #dc3545;">Time\'s up!</div>';
+  
+  // Show correct answer
+  const question = currentQuestions[currentQuestionIndex];
+  resultContainer.innerHTML += `<p>The correct answer was: ${question.answer}</p>`;
+  
+  // Highlight correct option
+  const options = document.querySelectorAll('#optionsContainer input');
+  options.forEach(option => {
+    option.disabled = true;
+    if (option.value === question.answer) {
+      option.parentElement.querySelector('span').style.backgroundColor = '#28a745';
+      option.parentElement.querySelector('span').style.color = 'white';
+    }
+  });
+  
+  // Save question result to user stats
+  saveQuestionResult(question.id, false, 'timeout');
+}
+
+// Check answer
+function checkAnswer() {
+  const question = currentQuestions[currentQuestionIndex];
+  
+  // For flashcard mode, just show the answer
+  if (quizSettings.flashcardMode) {
+    document.getElementById('optionsContainer').style.display = 'grid';
+    document.getElementById('checkAnswerBtn').textContent = 'Check Answer';
+    document.getElementById('checkAnswerBtn').onclick = checkAnswer;
+    quizSettings.flashcardMode = false; // Turn off flashcard mode for this question
+    return;
+  }
+  
+  // Get selected option
+  const selectedOption = document.querySelector('input[name="option"]:checked');
+  if (!selectedOption) {
+    // If no option selected
+    document.getElementById('resultContainer').innerHTML = 
+      '<div class="feedback" style="color: #dc3545;">Please select an answer!</div>';
+    return;
+  }
+  
+  // Disable checking and enable next
+  document.getElementById('checkAnswerBtn').disabled = true;
+  document.getElementById('nextQuestionBtn').disabled = false;
+  
+  // Disable all options
+  const options = document.querySelectorAll('#optionsContainer input');
+  options.forEach(option => {
+    option.disabled = true;
+  });
+  
+  // Clear any timers
+  if (!quizSettings.examMode) {
+    clearInterval(timerInterval);
+  }
+  
+  // Check if answer is correct
+  const isCorrect = selectedOption.value === question.answer;
+  const resultContainer = document.getElementById('resultContainer');
+  
+  if (isCorrect) {
+    resultContainer.innerHTML = '<div class="feedback" style="color: #28a745;">Correct! Well done!</div>';
+    selectedOption.parentElement.querySelector('span').style.backgroundColor = '#28a745';
+    selectedOption.parentElement.querySelector('span').style.color = 'white';
+    correctAnswers++;
+    
+    // Add confetti effect for correct answers
+    createConfetti();
+  } else {
+    resultContainer.innerHTML = '<div class="feedback" style="color: #dc3545;">Incorrect!</div>';
+    selectedOption.parentElement.querySelector('span').style.backgroundColor = '#dc3545';
+    selectedOption.parentElement.querySelector('span').style.color = 'white';
+    
+    // Highlight the correct answer
+    options.forEach(option => {
+      if (option.value === question.answer) {
+        option.parentElement.querySelector('span').style.backgroundColor = '#28a745';
+        option.parentElement.querySelector('span').style.color = 'white';
+      }
+    });
+  }
+  
+  // Show explanation if enabled
+  if (quizSettings.showExplanation && question.explanation) {
+    const explanationDiv = document.createElement('div');
+    explanationDiv.id = 'explanationBox';
+    explanationDiv.innerHTML = `<strong>Explanation:</strong><br>${formatExplanation(question.explanation)}`;
+    resultContainer.appendChild(explanationDiv);
+  }
+  
+  // Save question result
+  saveQuestionResult(question.id, isCorrect, Date.now() - questionStartTime);
+}
+
+// Format explanation text with line breaks
+function formatExplanation(text) {
+  // First replace normal line breaks
+  let formatted = text.replace(/\n/g, '<br>');
+  
+  // Then convert URLs to clickable links
+  // This regex matches URLs starting with http:// or https://
+  formatted = formatted.replace(
+    /(https?:\/\/[^\s]+)/g, 
+    '<a href="$1" target="_blank" class="explanation-link">$1</a>'
+  );
+  
+  return formatted;
+}
+
+// Move to next question
+function nextQuestion() {
+  currentQuestionIndex++;
+  displayQuestion();
+}
+
+// Finish quiz and show results
+function finishQuiz() {
+  clearInterval(timerInterval);
+  clearInterval(examTimerInterval);
+  
+  const quizTime = Math.round((Date.now() - quizStartTime) / 1000);
+  const accuracy = Math.round((correctAnswers / currentQuestions.length) * 100);
+
+  quizContainer.innerHTML = `
+    <h2>Quiz Complete!</h2>
+    <div class="feedback">You scored ${correctAnswers} out of ${currentQuestions.length} (${accuracy}%)</div>
+    
+    <div class="stats-grid">
+      <div class="stat-card">
+        <h3>Questions</h3>
+        <div class="stat-value">${currentQuestions.length}</div>
+      </div>
+      
+      <div class="stat-card">
+        <h3>Correct</h3>
+        <div class="stat-value">${correctAnswers}</div>
+      </div>
+      
+      <div class="stat-card">
+        <h3>Accuracy</h3>
+        <div class="stat-value">${accuracy}%</div>
+      </div>
+      
+      <div class="stat-card">
+        <h3>Time</h3>
+        <div class="stat-value">${formatTime(quizTime)}</div>
+      </div>
+    </div>
+    
+    <div class="report">
+      <h3>Question Report</h3>
+      <div id="questionReport"></div>
+    </div>
+    
+    <div class="buttons">
+      <button id="retryQuizBtn" class="button">Retry Quiz</button>
+      <button id="returnHomeBtn" class="button">Return to Home</button>
+    </div>
+  `;
+  
+  // Generate question report
+  const questionReport = document.getElementById('questionReport');
+  currentQuestions.forEach((question, index) => {
+    // Get the specific answer data for this question from user history
+    const userAnswerData = userData.questionHistory[question.id];
+    
+    // Only show as correct if we have answer data and it was marked correct
+    const isCorrect = userAnswerData && userAnswerData.correct;
+    const userAnswer = userAnswerData ? userAnswerData.answer : 'Not answered';
+    
+    questionReport.innerHTML += `
+      <div class="question-result" style="
+        margin: 10px 0;
+        padding: 15px;
+        border-radius: 8px;
+        background-color: ${isCorrect ? 'rgba(40, 167, 69, 0.1)' : 'rgba(220, 53, 69, 0.1)'};
+        border-left: 4px solid ${isCorrect ? '#28a745' : '#dc3545'};
+      ">
+        <p><strong>Question ${index + 1}:</strong> ${question.question}</p>
+        <p style="
+          color: ${isCorrect ? '#28a745' : '#dc3545'};
+          font-weight: bold;
+        ">
+          Your answer: ${userAnswer}
+        </p>
+        <p style="color: #333; font-weight: bold;">
+          Correct answer: ${question.answer}
+        </p>
+      </div>
+    `;
+  });
+
+  // Save quiz result
+  saveQuizResult(currentMode, currentQuestions.length, correctAnswers, quizTime);
+  
+  // Add event listeners for buttons
+  document.getElementById('retryQuizBtn').addEventListener('click', () => {
+    startQuiz(currentMode);
+  });
+  
+  document.getElementById('returnHomeBtn').addEventListener('click', () => {
+    homeContainer.style.display = 'block';
+    quizContainer.style.display = 'none';
+    statsContainer.style.display = 'none';
+    homeButton.classList.add('active');
+    statsButton.classList.remove('active');
+  });
+  
+  // Create confetti for good scores
+  if (accuracy >= 70) {
+    createConfetti();
+  }
+}
+
+// Format time in minutes and seconds
+function formatTime(seconds) {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+  return `${minutes}m ${remainingSeconds}s`;
+}
+
+// User data storage (would use localStorage in a real app)
+let userData = {
+  stats: {
+    totalQuestions: 0,
+    correctAnswers: 0,
+    totalTime: 0,
+    quizzesTaken: 0
+  },
+  questionHistory: {},
+  favoriteQuestions: [],
+  quizHistory: []
+};
+
+// Add this code after the userData declaration
+
+// Function to save user data to localStorage
+function saveUserData() {
+    try {
+        localStorage.setItem('quizUserData', JSON.stringify(userData));
+    } catch (e) {
+        console.error('Error saving to localStorage:', e);
+        showFeedback('Failed to save progress');
+    }
+}
+
+// Function to load user data from localStorage
+function loadUserData() {
+    try {
+        const savedData = localStorage.getItem('quizUserData');
+        if (savedData) {
+            userData = JSON.parse(savedData);
+            // Update UI immediately after loading
+            updateStatsDisplay();
+            updateFavoritesDisplay();
+        }
+    } catch (e) {
+        console.error('Error loading from localStorage:', e);
+        showFeedback('Failed to load saved progress');
+    }
+}
+
+// Modify the saveQuestionResult function
+function saveQuestionResult(questionId, correct, timeOrReason) {
+    // Existing code...
+    userData.stats.totalQuestions++;
+    if (correct) {
+        userData.stats.correctAnswers++;
+    }
+    
+    if (typeof timeOrReason === 'number') {
+        userData.stats.totalTime += timeOrReason;
+    }
+    
+    userData.questionHistory[questionId] = {
+        correct: correct,
+        timeOrReason: timeOrReason,
+        date: new Date().toISOString(),
+        answer: getSelectedAnswer()
+    };
+    
+    updateStatsDisplay();
+    // Add this line to persist the data
+    saveUserData();
+}
+
+// Modify the saveQuizResult function
+function saveQuizResult(mode, questions, correct, time) {
+    userData.stats.quizzesTaken++;
+    
+    userData.quizHistory.push({
+        mode: mode,
+        questions: questions,
+        correct: correct,
+        accuracy: Math.round((correct / questions) * 100),
+        time: time,
+        date: new Date().toISOString()
+    });
+    
+    updateStatsDisplay();
+    // Add this line to persist the data
+    saveUserData();
+}
+
+// Modify the toggleFavorite function
+function toggleFavorite() {
+    const question = currentQuestions[currentQuestionIndex];
+    const favoriteBtn = document.getElementById('favoriteBtn');
+    
+    if (isFavorite(question.id)) {
+        userData.favoriteQuestions = userData.favoriteQuestions.filter(id => id !== question.id);
+        favoriteBtn.classList.remove('active');
+        showFeedback('Question removed from favorites');
+    } else {
+        userData.favoriteQuestions.push(question.id);
+        favoriteBtn.classList.add('active');
+        showFeedback('Question added to favorites');
+    }
+    
+    updateFavoritesDisplay();
+    // Add this line to persist the data
+    saveUserData();
+}
+
+// Add data clearing functionality
+function addClearDataButton() {
+    const statsContainer = document.getElementById('statsContainer');
+    const clearButton = document.createElement('button');
+    clearButton.className = 'button button-danger';
+    clearButton.textContent = 'Reset All Progress';
+    clearButton.onclick = () => {
+        if (confirm('Are you sure you want to reset all progress? This cannot be undone.')) {
+            localStorage.removeItem('quizUserData');
+            userData = {
+                stats: {
+                    totalQuestions: 0,
+                    correctAnswers: 0,
+                    totalTime: 0,
+                    quizzesTaken: 0
+                },
+                questionHistory: {},
+                favoriteQuestions: [],
+                quizHistory: []
+            };
+            updateStatsDisplay();
+            updateFavoritesDisplay();
+            showFeedback('All progress has been reset');
+        }
+    };
+    statsContainer.appendChild(clearButton);
+}
+
+// Modify the init function to load saved data
+function init() {
+    // Load saved data first
+    loadUserData();
+    
+    // Fetch questions
+    fetchQuestions();
+    
+    // Initialize stats display
+    updateStatsDisplay();
+    updateFavoritesDisplay();
+    
+    // Add reset button to stats page
+    addClearDataButton();
+    
+    // Event listeners
+    document.getElementById('checkAnswerBtn').addEventListener('click', checkAnswer);
+    document.getElementById('nextQuestionBtn').addEventListener('click', nextQuestion);
+    document.getElementById('favoriteBtn').addEventListener('click', toggleFavorite);
+    document.getElementById('hintToggle').addEventListener('click', toggleHint);
+    
+    // Initial category and difficulty filter application
+    applyFilters();
+}
+
+// Get selected answer
+function getSelectedAnswer() {
+  const selected = document.querySelector('input[name="option"]:checked');
+  return selected ? selected.value : null;
+}
+
+// Get user answer for a specific question
+function getUserAnswerForQuestion(questionId) {
+  return userData.questionHistory[questionId] || { correct: false, answer: null };
+}
+
+// Update stats display
+function updateStatsDisplay() {
+  document.getElementById('totalQuestionsValue').textContent = userData.stats.totalQuestions;
+  document.getElementById('correctAnswersValue').textContent = userData.stats.correctAnswers;
+  
+  const accuracy = userData.stats.totalQuestions > 0
+    ? Math.round((userData.stats.correctAnswers / userData.stats.totalQuestions) * 100)
+    : 0;
+  document.getElementById('accuracyValue').textContent = `${accuracy}%`;
+  
+  const avgTime = userData.stats.totalQuestions > 0
+    ? Math.round(userData.stats.totalTime / userData.stats.totalQuestions / 1000)
+    : 0;
+  document.getElementById('averageTimeValue').textContent = `${avgTime}s`;
+  
+  // Update recent quizzes table
+  const recentQuizzesTable = document.getElementById('recentQuizzesTable');
+  recentQuizzesTable.innerHTML = '';
+  
+  const recentQuizzes = [...userData.quizHistory].reverse().slice(0, 5);
+  if (recentQuizzes.length === 0) {
+    recentQuizzesTable.innerHTML = '<tr><td colspan="5">No quizzes taken yet</td></tr>';
+  } else {
+    recentQuizzes.forEach(quiz => {
+      const date = new Date(quiz.date);
+      const formattedDate = `${date.toLocaleDateString()}`;
+      
+      recentQuizzesTable.innerHTML += `
+        <tr>
+          <td>${formattedDate}</td>
+          <td>${capitalizeFirstLetter(quiz.mode)}</td>
+          <td>${quiz.questions}</td>
+          <td>${quiz.accuracy}%</td>
+          <td>${formatTime(quiz.time)}</td>
+        </tr>
+      `;
+    });
+  }
+}
+
+// Toggle favorite status for a question
+function toggleFavorite() {
+  const question = currentQuestions[currentQuestionIndex];
+  const favoriteBtn = document.getElementById('favoriteBtn');
+  
+  if (isFavorite(question.id)) {
+    // Remove from favorites
+    userData.favoriteQuestions = userData.favoriteQuestions.filter(id => id !== question.id);
+    favoriteBtn.classList.remove('active');
+    showFeedback('Question removed from favorites');
+  } else {
+    // Add to favorites
+    userData.favoriteQuestions.push(question.id);
+    favoriteBtn.classList.add('active');
+    showFeedback('Question added to favorites');
+  }
+  
+  // Update favorites display
+  updateFavoritesDisplay();
+}
+
+// Check if a question is favorited
+function isFavorite(questionId) {
+  return userData.favoriteQuestions.includes(questionId);
+}
+
+// Update favorites display
+function updateFavoritesDisplay() {
+  const favoritesContainer = document.getElementById('favoriteQuestions');
+  
+  if (userData.favoriteQuestions.length === 0) {
+    favoritesContainer.innerHTML = '<p>You haven\'t saved any favorite questions yet.</p>';
+    return;
+  }
+  
+  favoritesContainer.innerHTML = '';
+  userData.favoriteQuestions.forEach(questionId => {
+    // Find the question in mock data (in a real app, would fetch from questions.json)
+    const question = mockQuestions.find(q => q.id === questionId) || {
+      question: 'Question not found',
+      answer: 'N/A'
+    };
+    
+    favoritesContainer.innerHTML += `
+      <div class="stat-card">
+        <p>${question.question.substring(0, 100)}...</p>
+        <p><strong>Answer:</strong> ${question.answer}</p>
+      </div>
+    `;
+  });
+}
+
+// Show feedback message
+function showFeedback(message) {
+  // Create feedback element
+  const feedback = document.createElement('div');
+  feedback.classList.add('feedback-container');
+  feedback.innerHTML = message;
+  
+  // Add to body
+  document.body.appendChild(feedback);
+  
+  // Remove after 3 seconds
+  setTimeout(() => {
+    feedback.style.opacity = '0';
+    setTimeout(() => {
+      document.body.removeChild(feedback);
+    }, 300);
+  }, 3000);
+}
+
+// Toggle hint visibility
+function toggleHint() {
+  const hintContent = document.getElementById('hintContent');
+  const hintToggle = document.getElementById('hintToggle');
+  
+  if (hintContent.style.display === 'none') {
+    hintContent.style.display = 'block';
+    hintToggle.textContent = 'Hide Hint';
+  } else {
+    hintContent.style.display = 'none';
+    hintToggle.textContent = 'Show Hint';
+  }
+}
+
+// Create confetti effect
+function createConfetti() {
+  const confettiContainer = document.createElement('div');
+  confettiContainer.classList.add('confetti');
+  document.body.appendChild(confettiContainer);
+  
+  const colors = ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4CAF50', '#8BC34A', '#CDDC39', '#FFEB3B', '#FFC107', '#FF9800', '#FF5722'];
+  
+  for (let i = 0; i < 100; i++) {
+    const confetti = document.createElement('div');
+    confetti.style.position = 'absolute';
+    confetti.style.width = `${Math.random() * 10 + 5}px`;
+    confetti.style.height = `${Math.random() * 10 + 5}px`;
+    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+    confetti.style.left = `${Math.random() * 100}%`;
+    confetti.style.top = `-10px`;
+    confetti.style.opacity = `${Math.random() * 0.8 + 0.2}`;
+    confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+    confetti.style.borderRadius = `${Math.random() > 0.5 ? '50%' : '0'}`;
+    
+    confettiContainer.appendChild(confetti);
+    
+    // Animate falling
+    const duration = Math.random() * 3 + 2;
+    const delay = Math.random() * 2;
+    
+    confetti.animate([
+      { transform: `translateY(0) rotate(0deg)`, opacity: 1 },
+      { transform: `translateY(${window.innerHeight}px) rotate(${Math.random() * 720}deg)`, opacity: 0 }
+    ], {
+      duration: duration * 1000,
+      delay: delay * 1000,
+      fill: 'forwards'
+    });
+  }
+  
+  // Remove confetti after 5 seconds
+  setTimeout(() => {
+    confettiContainer.remove();
+  }, 5000);
+}
+
+// Helper function to capitalize first letter
+function capitalizeFirstLetter(string) {
+  if (!string) return ''; // Return empty string if input is null/undefined
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+// Load JSON questions from file (would normally use fetch)
+function fetchQuestions() {
+  return fetch('questions.json')
+    .then(response => response.json())
+    .then(data => {
+      allQuestions = data;
+      console.log('Questions loaded:', allQuestions.length);
+      return data;
+    })
+    .catch(error => {
+      console.error('Error loading questions:', error);
+      // Use mockQuestions as fallback
+      allQuestions = mockQuestions;
+      console.log('Using mock questions:', allQuestions.length);
+      return mockQuestions;
+    });
+}
+
+// Initialize the application
+function init() {
+    // Load saved data first
+    loadUserData();
+    
+    // Fetch questions
+    fetchQuestions();
+    
+    // Initialize stats display
+    updateStatsDisplay();
+    updateFavoritesDisplay();
+    
+    // Add reset button to stats page
+    addClearDataButton();
+    
+    // Event listeners
+    document.getElementById('checkAnswerBtn').addEventListener('click', checkAnswer);
+    document.getElementById('nextQuestionBtn').addEventListener('click', nextQuestion);
+    document.getElementById('favoriteBtn').addEventListener('click', toggleFavorite);
+    document.getElementById('hintToggle').addEventListener('click', toggleHint);
+    
+    // Initial category and difficulty filter application
+    applyFilters();
+}
+
+// Start the app
+init();
+
+// ----- ALTERNATIVE GAME MODES -----
+
+// Initialize flashcards mode
+function startFlashcardsMode() {
+  // This would be implemented to show one side of the card first, then reveal the answer
+  console.log('Flashcards mode started');
+}
+
+// Initialize memory match game
+function startMemoryMatch() {
+  // This would create a memory matching game using pairs of questions/answers
+  quizContainer.innerHTML = `
+    <h2>Memory Match</h2>
+    <p>Match questions with their correct answers!</p>
+    <div id="memoryGrid" class="memory-grid"></div>
+    <div class="buttons">
+      <button id="returnHomeBtn" class="button">Return to Home</button>
+    </div>
+  `;
+  
+  // In a real implementation, would generate memory cards from questions
+}
+
+// Additional game mode: Security Simulation
+function startSecuritySimulation() {
+  // This would be an interactive scenario-based quiz
+  quizContainer.innerHTML = `
+    <h2>Security Incident Response Simulation</h2>
+    <p>You'll be presented with a security scenario and must make decisions to respond appropriately.</p>
+    <div id="scenarioContainer"></div>
+    <div class="buttons">
+      <button id="startSimulationBtn" class="button">Start Simulation</button>
+      <button id="returnHomeBtn" class="button">Return to Home</button>
+    </div>
+  `;
+  
+  // Would implement branching scenarios based on security incident responses
+}
+
+// Additional game mode: Knowledge Map
+function startKnowledgeMap() {
+  // This would visualize the relationship between different security concepts
+  quizContainer.innerHTML = `
+    <h2>Security Knowledge Map</h2>
+    <p>Explore the relationships between different security concepts</p>
+    <div id="knowledgeMapContainer" class="knowledge-map"></div>
+    <div class="buttons">
+      <button id="returnHomeBtn" class="button">Return to Home</button>
+    </div>
+  `;
+  
+  // Would generate an interactive map of security topics
+}
+    // Questions Data (loaded from questions.json)
+    let allQuestions = [];
+
+// Add filter change handler
+function handleFilterChange() {
+  const categoryFilter = document.querySelector('.categories-filter .active').dataset.category;
+  const difficultyFilter = document.querySelector('.difficulty-filter .active').dataset.difficulty;
+  
+  // Count available questions for current filters
+  const availableQuestions = allQuestions.filter(q => {
+    const matchesCategory = categoryFilter === 'all' || q.category === categoryFilter;
+    const matchesDifficulty = difficultyFilter === 'all' || q.difficulty === difficultyFilter;
+    return matchesCategory && matchesDifficulty;
+  }).length;
+
+  // Update UI to show available questions count
+  const feedbackMessage = `${availableQuestions} questions available for ${categoryFilter !== 'all' ? 'Section ' + categoryFilter + ' and ' : ''}${difficultyFilter !== 'all' ? difficultyFilter + ' difficulty' : 'all difficulties'}`;
+  showFeedback(feedbackMessage);
+}
+
+// Add event listeners for filters
+document.querySelectorAll('.filter-option').forEach(filter => {
+  filter.addEventListener('click', function() {
+    // Update active state
+    const filterContainer = this.closest('.categories-filter, .difficulty-filter');
+    filterContainer.querySelectorAll('.filter-option').forEach(f => f.classList.remove('active'));
+    this.classList.add('active');
+    
+    // Update available questions count
+    handleFilterChange();
+  });
+});
+</script>
